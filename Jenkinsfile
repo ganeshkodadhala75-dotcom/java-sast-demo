@@ -1,23 +1,30 @@
 pipeline {
     agent any
 
+    tools {
+        sonarQube 'SonarScanner'
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
-                echo 'Source code is checked out from GitHub'
+                checkout scm
             }
         }
 
-        stage('SonarQube Scan') {
+        stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                    sonar-scanner \
-                    -Dsonar.projectKey=java-sast-demo \
-                    -Dsonar.projectName=java-sast-demo \
-                    -Dsonar.sources=src
-                    '''
+                script {
+                    def scannerHome = tool 'SonarScanner'
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=java-sast-demo \
+                        -Dsonar.projectName=java-sast-demo \
+                        -Dsonar.sources=src
+                        """
+                    }
                 }
             }
         }
